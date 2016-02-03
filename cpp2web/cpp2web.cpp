@@ -2,6 +2,7 @@
 #include <sstream>
 #include <iostream>
 #include "Utility.h"
+#include <regex>
 
 
 
@@ -38,7 +39,8 @@ cpp2web::cpp2web(vector<string> args) :cpp2web()
 		}
 		else
 		{
-			for_each(begin(actions), end(actions), [&](string swtch) {
+			for_each(begin(actions), end(actions), [&](string swtch) 
+			{
 				(*this)[swtch](files);
 			});
 		}
@@ -53,10 +55,18 @@ cpp2web::~cpp2web()
 
 void cpp2web::stats(vector<string> files)
 {
-	for_each(begin(files), end(files), [](string s)-> void {
+	for_each(begin(files), end(files), [](string s)-> void 
+	{
 		stringstream src;
 		src << ifstream{ s, ios::binary }.rdbuf();
-		cout << src.str() << endl;
+		string file = src.str();
+		regex keywords("");
+		//Replace Keywords
+		//wrap comments
+		//Sanetize characters
+
+		//regex_replace(file, keywords,)
+		
 	});
 }
 
