@@ -33,4 +33,10 @@
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="Keywords.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cpp2web.css" />
+  </ItemGroup>
 </Project>

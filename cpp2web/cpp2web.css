@@ -1,0 +1,14 @@
+.Kword {
+color:blue;
+}
+.comment
+{
+    color:green;
+}
+.comment>.Kword{
+    color:green;
+}
+
+.str {
+color:orangered;
+}

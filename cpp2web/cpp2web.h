@@ -14,6 +14,11 @@ class cpp2web
 {
 
 	map < string, function<void(vector<string>)>> switchAction;
+   vector<string> keywords;
+
+   string htmlHeader(string title);
+   string htmlFooter();
+
 public:
 	cpp2web();
 	cpp2web(vector<string> args);
@@ -36,6 +41,8 @@ public:
 	void stats(vector<string> files);
 
 	void couleur(vector<string> files);
+
+   void htmlSanitize(string & s);
 
 };
 

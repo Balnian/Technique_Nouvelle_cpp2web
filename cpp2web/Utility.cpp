@@ -29,3 +29,17 @@ vector<string> Utility::extractWords(string s)
 
 	return str;
 }
+
+vector<string> Utility::regex_Split(string& str, regex expr)
+{
+   vector<string> out;
+   
+   auto sbegin = sregex_iterator(begin(str), end(str), expr);
+   auto send = sregex_iterator();
+
+   for (auto i = sbegin; i != send; ++i)
+   {
+      out.emplace_back(i->str());
+   }
+   return out;
+}

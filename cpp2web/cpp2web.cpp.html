@@ -1,0 +1,179 @@
+
+   <!DOCTYPE html> 
+   <html>
+   <head>
+   <title>cpp2web.cpp</title>
+   <link rel="stylesheet" type="text/css" href="cpp2web.css">
+   </head>
+
+   <body>
+      <pre>
+#include <span class="str">"cpp2web.h"</span>
+#include &ltsstream&gt
+#include &ltiostream&gt
+#include &ltalgorithm&gt
+#include &ltnumeric&gt
+#include &ltregex&gt
+#include &ltmap&gt
+#include <span class="str">"Utility.h"</span>
+
+<span class="comment">/**/</span>
+
+cpp2web::cpp2web()
+{
+   <span class="comment">/*1.1 + 2.2;<span class=<span class="str">"Kword"</span>>return</span>*/</span>
+   switchAction[<span class="str">"-stats"</span>] = [&amp](vector&ltstring&gt files) -&gt <span class=<span class="str">"Kword"</span>>void</span> { <span class=<span class="str">"Kword"</span>>this</span>-&gtstats(files); };
+
+   switchAction[<span class="str">"-couleur"</span>] = [&amp](vector&ltstring&gt files) -&gt <span class=<span class="str">"Kword"</span>>void</span> { <span class=<span class="str">"Kword"</span>>this</span>-&gtcouleur(files); };
+}
+
+cpp2web::cpp2web(vector&ltstring&gt args) :cpp2web()
+{
+   <span class="comment">//check <span class=<span class="str">"Kword"</span>>if</span> request was well formed</span>
+   <span class=<span class="str">"Kword"</span>>if</span> (end(args) != find_if(begin(args), end(args), [](string s) {
+      <span class=<span class="str">"Kword"</span>>return</span> Utility::str_begin_not_with(s, <span class="str">"-"</span>)
+         &amp&amp Utility::str_begin_not_with(s, <span class="str">"/"</span>)
+         &amp&amp !s.size() &gt 1
+         &amp&amp Utility::str_end_not_with(s, <span class="str">".h"</span>)
+         &amp&amp Utility::str_end_not_with(s, <span class="str">".cpp"</span>);
+   }))
+   {
+      cout &lt&lt <span class="str">"Paramêtre invalide!!!"</span> &lt&lt endl;
+   }
+   <span class=<span class="str">"Kword"</span>>else</span>
+   {
+      vector&ltstring&gt files{ args.size() }, actions{ args.size() };
+      <span class="comment">//split <span class=<span class="str">"Kword"</span>>switch</span> from files</span>
+      <span class=<span class="str">"Kword"</span>>auto</span> point = partition_copy(begin(args), end(args), begin(files), begin(actions), [](string s) {<span class=<span class="str">"Kword"</span>>return</span> Utility::str_begin_not_with(s, <span class="str">"-"</span>) &amp&amp Utility::str_begin_not_with(s, <span class="str">"/"</span>); });
+
+      <span class="comment">//<span class=<span class="str">"Kword"</span>>if</span> there is no <span class=<span class="str">"Kword"</span>>switch</span>(s) <span class=<span class="str">"Kword"</span>>or</span> no file(s) print an error</span>
+      <span class=<span class="str">"Kword"</span>>if</span> (files.size() &lt= 0 || actions.size() &lt= 0)
+      {
+         cout &lt&lt <span class="str">"Aucun fichier ou option passer en parametre"</span> &lt&lt endl;
+      }
+      <span class=<span class="str">"Kword"</span>>else</span>
+      {
+         <span class="comment">//Chargement des Keywords</span>
+         ifstream fKwords{ <span class="str">"Keywords.txt"</span> };
+         <span class=<span class="str">"Kword"</span>>for</span> (string kword; fKwords &gt&gt kword;)
+         {
+            keywords.emplace_back(kword);
+         }
+
+         <span class="comment">// Execution des commandes</span>
+         for_each(begin(actions), end(actions), [&amp](string swtch)
+         {
+            (*<span class=<span class="str">"Kword"</span>>this</span>)[swtch](files);
+         });
+      }
+   }
+
+}
+
+cpp2web::~cpp2web()
+{
+}
+
+<span class=<span class="str">"Kword"</span>>void</span> cpp2web::htmlSanitize(string &amp s)
+{
+   s = regex_replace(s, regex(<span class="str">"&amp"</span>), <span class="str">"&ampamp"</span>);
+   s = regex_replace(s, regex(<span class="str">"&lt"</span>), <span class="str">"&amplt"</span>);
+   s = regex_replace(s, regex(<span class="str">"&gt"</span>), <span class="str">"&ampgt"</span>);
+}
+
+string cpp2web::htmlHeader(string title)
+{
+
+   <span class=<span class="str">"Kword"</span>>return</span> R<span class="str">"(
+   &lt!DOCTYPE html&gt 
+   &lthtml&gt
+   &lthead&gt
+   &lttitle&gt)"</span>+ title + R<span class="str">"(&lt/title&gt
+   &ltlink rel="</span>stylesheet<span class="str">" type="</span>text/css<span class="str">" href="</span>cpp2web.css<span class="str">"&gt
+   &lt/head&gt
+
+   &ltbody&gt
+      &ltpre&gt
+)"</span> ;
+}
+
+string cpp2web::htmlFooter()
+{
+   <span class=<span class="str">"Kword"</span>>return</span> R<span class="str">"(
+         &lt/pre&gt
+      &lt/body&gt
+   &lt/html&gt
+      )"</span>;
+}
+
+
+<span class=<span class="str">"Kword"</span>>void</span> cpp2web::stats(vector&ltstring&gt files)
+{
+   map&ltstring, <span class=<span class="str">"Kword"</span>>int</span>&gt stat;
+   for_each(begin(files), end(files), [&ampstat](string s)-&gt <span class=<span class="str">"Kword"</span>>void</span>
+   {
+
+      stringstream src;
+      src &lt&lt ifstream{ s, ios::binary }.rdbuf();
+      string file = src.str();
+      regex split(R<span class="str">"(\d+\.\d+|[\w_]+)"</span>);
+
+      <span class=<span class="str">"Kword"</span>>auto</span> data = Utility::regex_Split(file, split);
+
+      <span class=<span class="str">"Kword"</span>>for</span> (<span class=<span class="str">"Kword"</span>>auto</span>&amp w : data)
+      {
+         stat[w]++;
+      }
+   });
+
+   ofstream ofs{ <span class="str">"stats.txt"</span> };
+   <span class=<span class="str">"Kword"</span>>for</span> (<span class=<span class="str">"Kword"</span>>const</span> <span class=<span class="str">"Kword"</span>>auto</span>&amp elem : stat)
+   {
+      ofs &lt&lt elem.first &lt&lt <span class="str">" : "</span> &lt&lt elem.second &lt&lt endl;
+   }
+
+}
+
+<span class=<span class="str">"Kword"</span>>void</span> cpp2web::couleur(vector&ltstring&gt files)
+{
+   cout &lt&lt <span class="str">"couleur"</span> &lt&lt endl;
+   for_each(begin(files), end(files), [&amp](string s)-&gt <span class=<span class="str">"Kword"</span>>void</span>
+   {
+      stringstream src;
+      src &lt&lt ifstream{ s, ios::binary }.rdbuf();
+      string file = src.str();
+
+      <span class="comment">// création du regex</span>
+      string reg = accumulate(begin(keywords), end(keywords), string{}, [](<span class=<span class="str">"Kword"</span>>const</span> std::string&amp a, string b)
+      {
+         <span class=<span class="str">"Kword"</span>>return</span> a.empty() ? <span class="str">"\\b"</span> + b + <span class="str">"\\b"</span>
+            : a + '|' + <span class="str">"\\b"</span> + b + <span class="str">"\\b"</span>;
+      });
+
+      regex keyW(reg);
+
+      htmlSanitize(file);
+
+      file = regex_replace(file, keyW, <span class="str">"&ltspan <span class="</span>Kword<span class="str">">class</span>=\"</span>Kword\<span class="str">"&gt$&amp&lt/span&gt"</span>);
+      file = regex_replace(file, regex(R<span class="str">"("</span>[^<span class="str">"]+"</span>)<span class="str">"), "</span>&ltspan <span class=<span class="str">"Kword"</span>>class</span>=\<span class="str">"str\"</span>&gt$&amp&lt/span&gt<span class="str">");
+      file = regex_replace(file, regex(R"</span>(/\*.*\*/)<span class="str">"), "</span>&ltspan <span class=<span class="str">"Kword"</span>>class</span>=\<span class="str">"comment\"</span>&gt$&amp&lt/span&gt<span class="str">");
+      file = regex_replace(file, regex(R"</span>(<span class="comment">//.*)<span class="str">"), "</span>&ltspan <span class=<span class="str">"Kword"</span>>class</span>=\<span class="str">"comment\"</span>&gt$&amp&lt/span&gt<span class="str">");</span>
+      
+
+      ofstream ofs{ s + "</span>.html" };
+      string h = htmlHeader(s);
+      string f = htmlFooter();
+      ofs &lt&lt h &lt&lt file &lt&lt f;
+
+   });
+
+   <span class="comment">//Replace Keywords</span>
+   <span class="comment">//wrap comments</span>
+   <span class="comment">//Sanetize characters</span>
+}
+
+
+         </pre>
+      </body>
+   </html>
+      

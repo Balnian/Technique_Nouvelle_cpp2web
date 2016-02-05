@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <regex>
 
 using namespace std;
 
@@ -22,6 +23,8 @@ public:
 
 	static bool str_end_not_with(string str, string ending) { return !str_end_with(str,ending); };
 	static bool str_begin_not_with(string str, string begin) { return !str_begin_with(str,begin); }
+
+   static vector<string> regex_Split(string& str, regex expr);
 	
 };
 
