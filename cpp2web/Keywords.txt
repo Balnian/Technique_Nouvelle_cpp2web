@@ -76,7 +76,7 @@ typeid
 typename
 union
 unsigned
-using(1)
+using
 virtual
 void
 volatile

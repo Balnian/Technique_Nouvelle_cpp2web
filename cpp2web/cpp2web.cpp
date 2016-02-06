@@ -11,7 +11,8 @@
 
 cpp2web::cpp2web()
 {
-   /*1.1 + 2.2;return*/
+   /*1.1 + 2.2;return
+   sdsd*/
    switchAction["-stats"] = [&](vector<string> files) -> void { this->stats(files); };
 
    switchAction["-couleur"] = [&](vector<string> files) -> void { this->couleur(files); };
@@ -115,18 +116,31 @@ void cpp2web::stats(vector<string> files)
          stat[w]++;
       }
    });
+   // Mettre en ordre
+   vector<pair<string, int>> vecStat;
+   copy(begin(stat), end(stat), back_inserter(vecStat));
+   sort(begin(vecStat), end(vecStat), [](pair<string, int> a, pair<string, int> b) 
+   {
+	   if (a.second == b.second)
+	   {
+		   return lexicographical_compare(begin(a.first),end(a.first),begin(b.first),end(b.first));
+	   }
+	   else
+	   {
+		   return b.second < a.second;
+	   }
+   });
 
+   //Afficher
    ofstream ofs{ "stats.txt" };
-   for (const auto& elem : stat)
+   for (const auto& elem : vecStat)
    {
       ofs << elem.first << " : " << elem.second << endl;
    }
-
 }
 
 void cpp2web::couleur(vector<string> files)
 {
-   cout << "couleur" << endl;
    for_each(begin(files), end(files), [&](string s)-> void
    {
       stringstream src;
@@ -145,8 +159,10 @@ void cpp2web::couleur(vector<string> files)
       htmlSanitize(file);
 
       file = regex_replace(file, keyW, "<span class=\"Kword\">$&</span>");
-      file = regex_replace(file, regex(R"("[^"]+")"), "<span class=\"str\">$&</span>");
-      file = regex_replace(file, regex(R"(/\*.*\*/)"), "<span class=\"comment\">$&</span>");
+	  // Code pour les string interfere avec le remplacement de keyword,
+	  // mais si passer en premier keywords interfere avec le class dans le span
+      //file = regex_replace(file, regex(R"("[^"]+")"), "<span class=\"str\">$&</span>");
+      file = regex_replace(file, regex(R"(\/\*[^(\*\)]*\*\/)"), "<span class=\"comment\">$&</span>"); //old: \/\*.*\*\/
       file = regex_replace(file, regex(R"(//.*)"), "<span class=\"comment\">$&</span>");
       
 
@@ -156,9 +172,5 @@ void cpp2web::couleur(vector<string> files)
       ofs << h << file << f;
 
    });
-
-   //Replace Keywords
-   //wrap comments
-   //Sanetize characters
 }
 
