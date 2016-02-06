@@ -36,6 +36,8 @@ cpp2web::cpp2web(vector<string> args) :cpp2web()
       vector<string> files{ args.size() }, actions{ args.size() };
       //split switch from files
       auto point = partition_copy(begin(args), end(args), begin(files), begin(actions), [](string s) {return Utility::str_begin_not_with(s, "-") && Utility::str_begin_not_with(s, "/"); });
+	  files.erase(remove_if(files.begin(), files.end(), [](string s) { return  s.empty(); }), files.end());
+	  actions.erase(remove_if(actions.begin(), actions.end(), [](string s) { return  s.empty(); }), actions.end());
 
       //if there is no switch(s) or no file(s) print an error
       if (files.size() <= 0 || actions.size() <= 0)
@@ -50,6 +52,7 @@ cpp2web::cpp2web(vector<string> args) :cpp2web()
          {
             keywords.emplace_back(kword);
          }
+
 
          // Execution des commandes
          for_each(begin(actions), end(actions), [&](string swtch)

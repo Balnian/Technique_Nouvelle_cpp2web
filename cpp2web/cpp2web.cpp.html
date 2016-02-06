@@ -46,6 +46,8 @@ cpp2web::cpp2web(vector&ltstring&gt args) :cpp2web()
       vector&ltstring&gt files{ args.size() }, actions{ args.size() };
       <span class="comment">//split <span class="Kword">switch</span> from files</span>
       <span class="Kword">auto</span> point = partition_copy(begin(args), end(args), begin(files), begin(actions), [](string s) {<span class="Kword">return</span> Utility::str_begin_not_with(s, "-") &amp&amp Utility::str_begin_not_with(s, "/"); });
+	  files.erase(remove_if(files.begin(), files.end(), [](string s) { <span class="Kword">return</span>  s.empty(); }), files.end());
+	  actions.erase(remove_if(actions.begin(), actions.end(), [](string s) { <span class="Kword">return</span>  s.empty(); }), actions.end());
 
       <span class="comment">//<span class="Kword">if</span> there is no <span class="Kword">switch</span>(s) <span class="Kword">or</span> no file(s) print an error</span>
       <span class="Kword">if</span> (files.size() &lt= 0 || actions.size() &lt= 0)
@@ -60,6 +62,7 @@ cpp2web::cpp2web(vector&ltstring&gt args) :cpp2web()
          {
             keywords.emplace_back(kword);
          }
+
 
          <span class="comment">// Execution des commandes</span>
          for_each(begin(actions), end(actions), [&amp](string swtch)
