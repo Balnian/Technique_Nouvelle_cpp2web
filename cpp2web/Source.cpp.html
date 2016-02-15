@@ -12,19 +12,26 @@
 #include &ltvector&gt
 #include &ltstring&gt
 #include &ltalgorithm&gt
+#include &ltchrono&gt
 
 #include "Utility.h"
 #include "cpp2web.h"
 
 <span class="Kword">using</span> <span class="Kword">namespace</span> std;
+<span class="Kword">using</span> <span class="Kword">namespace</span> std::chrono;
 
 
 
 <span class="Kword">int</span> main(<span class="Kword">int</span> argc, <span class="Kword">char</span> * argv[])
 {
+	<span class="Kword">auto</span> start = high_resolution_clock::now();
 	vector&ltstring&gt args(argv+1, argv+ argc); 
 	
 	cpp2web inst(args);
+
+	<span class="Kword">auto</span> end = high_resolution_clock::now();
+	milliseconds temp= duration_cast&ltmilliseconds&gt( end - start);
+	cout &lt&lt temp.count() &lt&lt endl;
 
 }
          </pre>
