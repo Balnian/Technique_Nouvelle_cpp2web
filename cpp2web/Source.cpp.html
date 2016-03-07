@@ -16,6 +16,7 @@
 
 #include "Utility.h"
 #include "cpp2web.h"
+#include "ThreadAPI.h"
 
 <span class="Kword">using</span> <span class="Kword">namespace</span> std;
 <span class="Kword">using</span> <span class="Kword">namespace</span> std::chrono;
@@ -25,12 +26,25 @@
 <span class="Kword">int</span> main(<span class="Kword">int</span> argc, <span class="Kword">char</span> * argv[])
 {
 	<span class="Kword">auto</span> start = high_resolution_clock::now();
-	vector&ltstring&gt args(argv+1, argv+ argc); 
-	
+	vector&ltstring&gt args(argv + 1, argv + argc);
+
+
+	ThreadAPI&ltADHOC_THREAD&gt threadInstance{};
+
+	thread xx = threadInstance.execute([](string text, <span class="Kword">int</span> num) { cout &lt&lt text &lt&lt num &lt&lt endl; }, "ceci : ", 12);
+
+
+	<span class="Kword">if</span> (xx.joinable())
+	{
+		xx.join();
+	}
+
+
 	cpp2web inst(args);
 
+
 	<span class="Kword">auto</span> end = high_resolution_clock::now();
-	milliseconds temp= duration_cast&ltmilliseconds&gt( end - start);
+	milliseconds temp = duration_cast&ltmilliseconds&gt(end - start);
 	cout &lt&lt temp.count() &lt&lt endl;
 
 }
