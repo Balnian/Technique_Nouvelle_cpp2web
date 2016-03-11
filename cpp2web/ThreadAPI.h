@@ -68,10 +68,15 @@ public:
 
 	ThreadAPI(unsigned int max_thread = thread::hardware_concurrency()) :m_TP{ max_thread } {  }
 	~ThreadAPI() = default;
-	template<class f, class ... Args>
-	void execute(f&& func, Args && ... args)
+	template<class f>
+	void execute(f&& func)
 	{
-		m_TP.addTask(forward<f>(func),forward<Args>(args)...);
+		m_TP.addTask(func);
+	}
+	void wait() 
+	{
+		m_TP.halt();
+		m_TP.wait_end(); 
 	}
 
 };

@@ -19,9 +19,12 @@ int main(int argc, char * argv[])
 	vector<string> args(argv + 1, argv + argc);
 
 
-	ThreadAPI<THREAD_POOL> threadInstance{};
+	ThreadAPI<THREAD_POOL> threadInstance{};/*
 
-	threadInstance.execute([](string text, int num) { cout << text << num << endl; }, "ceci : ", 12);
+	threadInstance.execute([]() { cout << "text" << "num" << endl; });
+	threadInstance.execute([]() { cout << "text" << "num" << endl; });
+	threadInstance.execute([]() { cout << "text" << "num" << endl; });
+	threadInstance.execute([]() { cout << "text" << "num" << endl; });*/
 
 
 	

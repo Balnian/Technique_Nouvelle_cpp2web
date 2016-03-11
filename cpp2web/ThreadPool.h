@@ -45,14 +45,14 @@ class ThreadPool
 public:
 	ThreadPool(unsigned int nb_Thread = thread::hardware_concurrency());
 	~ThreadPool();
-	template<class F, class ... Args>
-	thread addTask(F && func, Args && ... args)
+	template<class F>
+	void addTask(F && func)
 	{
 		std::lock(m_lockQueue, m_lockNewTask);
 		std::unique_lock<std::mutex> verrou_ntm{ m_lockNewTask, std::adopt_lock };
 		std::lock_guard<std::mutex> verrou_m{ m_lockQueue, std::adopt_lock };
-		auto movFunc = bind([](F && func, Args && ... args) {func(forward<Args>(args)...); },func, forward<Args>(args)...);
-		m_pool.emplace_back(make_task([&]() { movFunc(); }));
+		//auto movFunc = bind([](F && func, Args && ... args) {func(forward<Args>(args)...); },func, forward<Args>(args)...);
+		m_Tasks.emplace_back(make_task(func));
 		new_task.notify_one();
 	}
 
@@ -63,11 +63,22 @@ public:
 		new_task.notify_all();
 	}
 
+	void wait_end() const
+	{
+		for (auto & t : m_pool)
+		{
+			if (t.joinable())
+			{
+				t.join();
+			}
+		}
+	}
+
 private:
 	template<class F>
-	static std::unique_ptr<Base_task> make_task(F && func)
+	static std::unique_ptr<Task<F>> make_task(F && func)
 	{
-		return std::unique_ptr<Base_task>(new Task<F>(move(func)));
+		return std::make_unique<Task<F>>(Task<F>(func));
 	}
 
 	bool empty() const
@@ -85,16 +96,7 @@ private:
 		return closing() && empty();
 	}
 
-	void wait_end() const
-	{
-		for (auto & t : m_pool)
-		{
-			if (t.joinable())
-			{
-				t.join();
-			}
-		}
-	}
+	
 
 
 };

@@ -6,8 +6,11 @@
 #include <regex>
 #include <map>
 #include <thread>
+#include <chrono>
 #include "Utility.h"
+#include "ThreadAPI.h"
 
+using namespace std::chrono;
 /**/
 
 cpp2web::cpp2web()
@@ -54,21 +57,88 @@ cpp2web::cpp2web(vector<string> args) :cpp2web()
 				keywords.emplace_back(kword);
 			}
 
-			vector<thread> TPool;
-			// Execution des commandes
-			for_each(begin(actions), end(actions), [&](string swtch)
-			{
-				TPool.emplace_back((*this)[swtch], files);
-			});
+			const size_t MULTIPLICATEUR = 100;
 
-			for_each(begin(TPool), end(TPool), [](thread& t) 
+			const char csvSepa = ';';
+
+			ofstream tb{ "ThreadBenchmark.csv" };
+
+			cout << "No Thread" << endl;
+			// No Thread
 			{
-				if (t.joinable())
-					t.join();
-			});
+				ThreadAPI<NO_THREAD> tAPI;
+
+				auto start = high_resolution_clock::now();
+
+				// Execution des commandes
+				for_each(begin(actions), end(actions), [&](string swtch)
+				{
+					tAPI.execute((*this)[swtch], files);
+				});
+				auto end = high_resolution_clock::now();
+				tb << "NO Thread" << csvSepa << duration_cast<microseconds>(end - start).count() << endl;
+			}
+
+			cout << "Thread on-the-spot" << endl;
+			// Thread on-the-spot
+			{
+				ThreadAPI<ADHOC_THREAD> tAPI;
+				auto start = high_resolution_clock::now();
+
+				vector<thread> TPool;
+				// Execution des commandes
+				for_each(begin(actions), end(actions), [&](string swtch)
+				{
+					TPool.emplace_back(tAPI.execute((*this)[swtch], files));
+				});
+
+				for_each(begin(TPool), end(TPool), [](thread& t)
+				{
+					if (t.joinable())
+						t.join();
+				});
+
+				auto end = high_resolution_clock::now();
+				tb << "Thread on-the-spot" << csvSepa << duration_cast<microseconds>(end - start).count() << endl;
+			}
+
+			cout << "Thread Pool" << endl;
+			// Thread Pool
+			{
+				for (size_t i = 1; i < 40; i++)
+				{
+
+					system("del gen\*");
+					ThreadAPI<THREAD_POOL> tAPI(i);
+					auto start = high_resolution_clock::now();
+					tAPI.execute([=]()
+					{
+						cout << i << flush;
+						stats(files);
+						couleur(files);
+						//switchAction[swtch](files);
+					});
+
+					// Execution des commandes
+					//for_each(begin(actions), end(actions), [&/*,&tAPI*/](string swtch)
+					//{
+					//	cout << swtch << flush;
+					//	bind(switchAction[swtch], this, files);
+					//	tAPI.execute(bind(switchAction[swtch], this, files) /*[&,swtch]()
+					//	{
+					//		cout << swtch << flush;
+					//		switchAction[swtch](files);
+					//	}*/);
+					//});
+					tAPI.wait();
+					auto end = high_resolution_clock::now();
+					tb << "Thread Pool(" << i << ")" << csvSepa << duration_cast<microseconds>(end - start).count() << endl;
+					
+					this_thread::sleep_for(seconds(1));
+				}
+			}
 		}
 	}
-
 }
 
 cpp2web::~cpp2web()
@@ -93,7 +163,7 @@ string cpp2web::htmlHeader(string title)
    <link rel="stylesheet" type="text/css" href="cpp2web.css">
    </head>
 
-		   <body>
+													   <body>
       <pre>
 )";
 }
@@ -142,7 +212,7 @@ void cpp2web::stats(vector<string> files)
 	});
 
 	//Afficher
-	ofstream ofs{ "stats.txt" };
+	ofstream ofs{ "gen\\stats.txt" };
 	for (const auto& elem : vecStat)
 	{
 		ofs << elem.first << " : " << elem.second << endl;
@@ -176,7 +246,7 @@ void cpp2web::couleur(vector<string> files)
 		file = regex_replace(file, regex(R"(//.*)"), "<span class=\"comment\">$&</span>");
 
 
-		ofstream ofs{ s + ".html" };
+		ofstream ofs{ "gen\\"+ s + ".html" };
 		string h = htmlHeader(s);
 		string f = htmlFooter();
 		ofs << h << file << f;
