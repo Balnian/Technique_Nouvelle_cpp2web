@@ -57,84 +57,91 @@ cpp2web::cpp2web(vector<string> args) :cpp2web()
 				keywords.emplace_back(kword);
 			}
 
-			const size_t MULTIPLICATEUR = 100;
+			const size_t MULTIPLICATEUR = 1;
 
 			const char csvSepa = ';';
 
 			ofstream tb{ "ThreadBenchmark.csv" };
-
-			cout << "No Thread" << endl;
-			// No Thread
+			for (size_t i = 0; i < 10; i++)
 			{
-				ThreadAPI<NO_THREAD> tAPI;
 
-				auto start = high_resolution_clock::now();
 
-				// Execution des commandes
-				for_each(begin(actions), end(actions), [&](string swtch)
+				cout << "No Thread" << endl;
+				// No Thread
 				{
-					tAPI.execute((*this)[swtch], files);
-				});
-				auto end = high_resolution_clock::now();
-				tb << "NO Thread" << csvSepa << duration_cast<microseconds>(end - start).count() << endl;
-			}
+					ThreadAPI<NO_THREAD> tAPI;
 
-			cout << "Thread on-the-spot" << endl;
-			// Thread on-the-spot
-			{
-				ThreadAPI<ADHOC_THREAD> tAPI;
-				auto start = high_resolution_clock::now();
-
-				vector<thread> TPool;
-				// Execution des commandes
-				for_each(begin(actions), end(actions), [&](string swtch)
-				{
-					TPool.emplace_back(tAPI.execute((*this)[swtch], files));
-				});
-
-				for_each(begin(TPool), end(TPool), [](thread& t)
-				{
-					if (t.joinable())
-						t.join();
-				});
-
-				auto end = high_resolution_clock::now();
-				tb << "Thread on-the-spot" << csvSepa << duration_cast<microseconds>(end - start).count() << endl;
-			}
-
-			cout << "Thread Pool" << endl;
-			// Thread Pool
-			{
-				for (size_t i = 1; i < 40; i++)
-				{
-
-					system("del gen\*");
-					ThreadAPI<THREAD_POOL> tAPI(i);
 					auto start = high_resolution_clock::now();
-					tAPI.execute([=]()
+
+					//for (size_t i = 0; i < MULTIPLICATEUR; i++)
+					// Execution des commandes
+					for_each(begin(actions), end(actions), [&](string swtch)
 					{
-						cout << i << flush;
-						stats(files);
-						couleur(files);
-						//switchAction[swtch](files);
+						tAPI.execute((*this)[swtch], files);
+					});
+					auto end = high_resolution_clock::now();
+					tb << "NO Thread" << csvSepa << duration_cast<microseconds>(end - start).count() << endl;
+				}
+
+				cout << "Thread on-the-spot" << endl;
+				// Thread on-the-spot
+				{
+					ThreadAPI<ADHOC_THREAD> tAPI;
+					auto start = high_resolution_clock::now();
+
+					vector<thread> TPool;
+					//for (size_t i = 0; i < MULTIPLICATEUR; i++)
+					// Execution des commandes
+					for_each(begin(actions), end(actions), [&](string swtch)
+					{
+						TPool.emplace_back(tAPI.execute((*this)[swtch], files));
 					});
 
-					// Execution des commandes
-					//for_each(begin(actions), end(actions), [&/*,&tAPI*/](string swtch)
-					//{
-					//	cout << swtch << flush;
-					//	bind(switchAction[swtch], this, files);
-					//	tAPI.execute(bind(switchAction[swtch], this, files) /*[&,swtch]()
-					//	{
-					//		cout << swtch << flush;
-					//		switchAction[swtch](files);
-					//	}*/);
-					//});
-					tAPI.wait();
+					for_each(begin(TPool), end(TPool), [](thread& t)
+					{
+						if (t.joinable())
+							t.join();
+					});
+
 					auto end = high_resolution_clock::now();
-					tb << "Thread Pool(" << i << ")" << csvSepa << duration_cast<microseconds>(end - start).count() << endl;
-					
-					this_thread::sleep_for(seconds(1));
+					tb << "Thread on-the-spot" << csvSepa << duration_cast<microseconds>(end - start).count() << endl;
+				}
+
+				cout << "Thread Pool" << endl;
+				// Thread Pool
+				{
+					for (size_t i = 1; i < 40; i++)
+					{
+
+						system("del gen\*");
+						ThreadAPI<THREAD_POOL> tAPI(i);
+						auto start = high_resolution_clock::now();
+						//for (size_t i = 0; i < MULTIPLICATEUR; i++)
+						tAPI.execute([=]()
+						{
+							cout << i << flush;
+							stats(files);
+							couleur(files);
+							//switchAction[swtch](files);
+						});
+
+						// Execution des commandes
+						//for_each(begin(actions), end(actions), [&/*,&tAPI*/](string swtch)
+						//{
+						//	cout << swtch << flush;
+						//	bind(switchAction[swtch], this, files);
+						//	tAPI.execute(bind(switchAction[swtch], this, files) /*[&,swtch]()
+						//	{
+						//		cout << swtch << flush;
+						//		switchAction[swtch](files);
+						//	}*/);
+						//});
+						tAPI.wait();
+						auto end = high_resolution_clock::now();
+						tb << "Thread Pool(" << i << ")" << csvSepa << duration_cast<microseconds>(end - start).count() << endl;
+
+						//this_thread::sleep_for(seconds(1));
+					}
 				}
 			}
 		}
